@@ -11,13 +11,13 @@ type CookieData struct {
 	GmailnatorSession string
 }
 
-func NewCookie(baseURL string) *CookieData {
+func NewCookie(baseURL string) (*CookieData, *http.Client, error) {
 	jar, _ := cookiejar.New(nil)
 	client := &http.Client{Jar: jar}
 
 	resp, err := client.Get(baseURL)
 	if err != nil {
-		return nil
+		return nil, nil, err
 	}
 	defer resp.Body.Close()
 
@@ -31,5 +31,5 @@ func NewCookie(baseURL string) *CookieData {
 			data.GmailnatorSession = cookie.Value
 		}
 	}
-	return data
+	return data, client, nil
 }
