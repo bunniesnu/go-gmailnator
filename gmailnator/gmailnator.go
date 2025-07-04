@@ -1,19 +1,21 @@
 package gmailnator
 
-import "fmt"
+const defaultURL = "https://www.emailnator.com/"
 
-type Address struct {
+type Gmailnator struct {
+	BaseURL string
+	CookieData *CookieData
 	Email string
 }
 
-func NewAddress() *Address {
-	// TODO: Implement random address generation
-	return &Address{
-		Email: fmt.Sprintf("randomuser123@gmail.com"),
+func NewGmailnator() *Gmailnator {
+	cookie := NewCookie(defaultURL)
+	if cookie == nil {
+		return nil
+	}	
+	return &Gmailnator{
+		BaseURL: defaultURL,
+		CookieData: cookie,
+		Email: "",
 	}
-}
-
-func (a *Address) FetchInbox() ([]string, error) {
-	// TODO: Implement inbox fetching
-	return []string{}, nil
-}
+}	
