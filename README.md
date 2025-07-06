@@ -14,19 +14,22 @@ go get github.com/bunniesnu/go-gmailnator
 ## Usage
 
 ```
+// Check latest test results
+available, err := gmailnator.available()
+
 // Initialize Gmailnator
-gmailnator, err := NewGmailnator()
+gmail, err := gmailnator.NewGmailnator()
 
 // Generate a new random Gmail address
-err = gmailnator.GenerateEmail()
+err = gmail.GenerateEmail()
 
 // Get lists of received emails
-mailList, err := gmailnator.GetMails()
+mailList, err := gmail.GetMails()
 
 // Get the body of each email
 for _, mail := range mailList {
     messageId := mail.Mid
-    mailDetails, err := gmailnator, GetMailBody(messageId)
+    mailDetails, err := gmail.GetMailBody(messageId)
 }
 ```
 

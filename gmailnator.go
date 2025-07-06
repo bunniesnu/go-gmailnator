@@ -35,6 +35,41 @@ type ReceivedEmailDetail struct {
 	Body string `json:"body"`
 }
 
+func available() (bool, error) {
+	req, err := http.NewRequest(http.MethodGet, "https://api.github.com/repos/bunniesnu/go-gmailnator/actions/workflows/test-schedule.yml/runs?per_page=1", nil)
+	if err != nil {
+		return false, err
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	}
+	var result struct {
+		TotalCount int `json:"total_count"`
+		Runs []struct {
+			Conclusion string `json:"conclusion"`
+		} `json:"workflow_runs"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return false, fmt.Errorf("failed to decode response: %w", err)
+	}
+	if result.TotalCount == 0 {
+		return false, fmt.Errorf("no workflow runs found")
+	}
+	if len(result.Runs) == 0 {
+		return false, fmt.Errorf("no runs found in the latest workflow run")
+	}
+	if result.Runs[0].Conclusion != "success" {
+		return false, fmt.Errorf("latest workflow run did not conclude successfully: %s", result.Runs[0].Conclusion)
+	}
+	return true, nil
+}
+
 func NewGmailnator() (*Gmailnator, error) {
 	cookie, client, err := NewCookie("https://smailpro.com/temp-gmail")
 	if err != nil {
