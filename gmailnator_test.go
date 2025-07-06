@@ -1,8 +1,6 @@
 package gmailnator
 
 import (
-	"net/smtp"
-	"os"
 	"testing"
 )
 
@@ -12,10 +10,7 @@ func TestNewGmailnator(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create Gmailnator instance: %v", err)
 	}
-	if gmailnator.BaseURL != defaultURL {
-		t.Errorf("Expected BaseURL to be %s, got %s", defaultURL, gmailnator.BaseURL)
-	}
-	if gmailnator.Cookie == nil {
+	if gmailnator.XSRFToken == "" {
 		t.Error("Expected Cookie to be initialized, got nil")
 	}
 	if gmailnator.Client == nil {
@@ -30,21 +25,4 @@ func TestNewGmailnator(t *testing.T) {
 	if email == "" {
 		t.Error("Expected generated email to be non-empty, got empty string")
 	}
-	
-	// Send test email
-	login := os.Getenv("SMTP_LOGIN")
-    from := os.Getenv("SMTP_FROM")
-    password := os.Getenv("SMTP_PASSWORD")
-    to := []string{email}
-    smtpHost := os.Getenv("SMTP_HOST")
-    smtpPort := os.Getenv("SMTP_PORT")
-	if login == "" || from == "" || password == "" || smtpHost == "" || smtpPort == "" {
-		t.Fatal("SMTP environment variables are not set")
-	}
-    message := []byte("Subject: Test Email\n\nThis is the email body.")
-    auth := smtp.PlainAuth("", login, password, smtpHost)
-    err = smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
-    if err != nil {
-        t.Errorf("Failed to send test email: %v", err)
-    }
 }

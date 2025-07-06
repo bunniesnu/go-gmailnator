@@ -8,7 +8,6 @@ import (
 
 type CookieData struct {
 	XSRFToken         string
-	GmailnatorSession string
 }
 
 func NewCookie(baseURL string) (*CookieData, *http.Client, error) {
@@ -26,9 +25,6 @@ func NewCookie(baseURL string) (*CookieData, *http.Client, error) {
 	for _, cookie := range cookies {
 		if cookie.Name == "XSRF-TOKEN" {
 			data.XSRFToken = strings.ReplaceAll(cookie.Value, "%3D", "=")
-		}
-		if cookie.Name == "gmailnator_session" {
-			data.GmailnatorSession = cookie.Value
 		}
 	}
 	return data, client, nil
