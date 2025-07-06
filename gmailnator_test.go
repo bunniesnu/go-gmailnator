@@ -76,7 +76,7 @@ func TestNewGmailnator(t *testing.T) {
 	if gmailnator.RapidAPI == "" {
 		t.Error("Expected RapidAPI to be set, got empty string")
 	}
-	t.Logf("Generated email: %s at %d", gmailnator.Email.Email, gmailnator.Email.Timestamp)
+	t.Log("Gmailnator email generate success")
 	
 	// Send a test email
 	destination := gmailnator.Email.Email
@@ -88,7 +88,7 @@ func TestNewGmailnator(t *testing.T) {
 	}
 	trimmedExpectedSubject := strings.TrimSpace(subject)
 	trimmedExpectedBody := strings.TrimSpace(body)
-	t.Logf("Test email sent to %s with subject '%s'", destination, trimmedExpectedSubject)
+	t.Log("Test email send success")
 
 	// Test GetMails
 	for range 5 {
@@ -116,7 +116,7 @@ func TestNewGmailnator(t *testing.T) {
 			if trimmedMailDetails != trimmedExpectedBody {
 				t.Errorf("Expected mail body '%s', got '%s'", trimmedExpectedBody, trimmedMailDetails)
 			}
-			t.Logf("Received email from %s with subject '%s' and body '%s'", mail.From, trimmedMailSubject, trimmedMailDetails)
+			t.Log("Receive email success")
 			return
 		}
 		time.Sleep(5 * time.Second) // Wait for 5 seconds before the next iteration
