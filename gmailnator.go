@@ -25,11 +25,14 @@ type Email struct {
 
 type ReceivedEmail struct {
 	Mid         string  `json:"mid"`
-	TextFrom    string  `json:"textFrom"`
-	TextDate    string  `json:"textDate"`
-	TextSubject string  `json:"textSubject"`
-	TextTo      string  `json:"textTo"`
-	TextSnippet *string `json:"textSnippet"`
+	From    string  `json:"textFrom"`
+	Date    string  `json:"textDate"`
+	Subject string  `json:"textSubject"`
+	To      string  `json:"textTo"`
+}
+
+type ReceivedEmailDetail struct {
+	Body string `json:"body"`
 }
 
 func NewGmailnator() (*Gmailnator, error) {
@@ -127,12 +130,6 @@ func (g *Gmailnator) GetMails() ([]ReceivedEmail, error) {
 	if err != nil {
 		return nil, errors.New("failed to fetch new email: " + err.Error())
 	}
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.New("failed to read response body: " + err.Error())
-	}
-	fmt.Println("Response Body:", string(body))
-	resp.Body = io.NopCloser(strings.NewReader(string(body)))
 	defer resp.Body.Close()
     var emailResp struct {
         Items []ReceivedEmail `json:"items"`
@@ -141,4 +138,39 @@ func (g *Gmailnator) GetMails() ([]ReceivedEmail, error) {
         return nil, errors.New("failed to decode response for new email: " + err.Error())
     }
 	return emailResp.Items, nil
+}
+func (g *Gmailnator) GetMailBody(messageId string) (string, error) {
+	recaptcha, err := gocaptcha.NewRecaptchaV3(RecaptchaAnchorURL, nil, 0)
+	if err != nil {
+		return "", errors.New("failed to create recaptcha instance: " + err.Error())
+	}
+	captchaToken, err := recaptcha.Solve()
+	if err != nil {
+		return "", errors.New("failed to solve recaptcha: " + err.Error())
+	}
+	key, err := g.GetKey(fmt.Sprintf(`{"email": "%s", "message_id": "%s"}`, g.Email.Email, messageId), captchaToken)
+	if err != nil {
+		return "", errors.New("failed to get key for new email: " + err.Error())
+	}
+	endpoint := fmt.Sprintf("https://public-sonjj.p.rapidapi.com/email/gm/read?key=%s&rapidapi-key=%s&email=%s&message_id=%s", key, g.RapidAPI, g.Email.Email, messageId)
+    req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+    if err != nil {
+        return "", errors.New("failed to create request for new email: " + err.Error())
+    }
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
+	req.Header.Set("x-xsrf-token", g.XSRFToken)
+	req.Header.Set("x-g-token", captchaToken)
+	resp, err := g.Client.Do(req)
+	if err != nil {
+		return "", errors.New("failed to fetch new email: " + err.Error())
+	}
+	defer resp.Body.Close()
+	var emailResp struct {
+		Items ReceivedEmailDetail `json:"items"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&emailResp); err != nil {
+		return "", errors.New("failed to decode response for new email: " + err.Error())
+	}
+	return emailResp.Items.Body, nil
 }
