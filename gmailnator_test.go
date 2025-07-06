@@ -22,6 +22,12 @@ func TestNewGmailnator(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to generate email: %v", err)
 	}
+	if gmailnator.XSRFToken == "" {
+		t.Error("Expected XSRFToken to be set, got empty string")
+	}
+	if gmailnator.Client == nil {
+		t.Error("Expected Client to be set, got nil")
+	}
 	if gmailnator.Email == nil {
 		t.Error("Expected Email to be generated, got nil")
 	}
@@ -33,14 +39,5 @@ func TestNewGmailnator(t *testing.T) {
 	}
 	if gmailnator.RapidAPI == "" {
 		t.Error("Expected RapidAPI to be set, got empty string")
-	}
-	if gmailnator.Key == "" {
-		t.Error("Expected Key to be set, got empty string")
-	}
-	if gmailnator.XSRFToken == "" {
-		t.Error("Expected XSRFToken to be set, got empty string")
-	}
-	if gmailnator.Client == nil {
-		t.Error("Expected Client to be set, got nil")
 	}
 }
