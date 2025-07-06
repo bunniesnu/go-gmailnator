@@ -1,7 +1,7 @@
 # Go-Gmailnator
 
-![Go Package](https://img.shields.io/github/release/bunniesnu/go-gmailnator.svg)
-![Go Tests](https://github.com/bunniesnu/go-gmailnator/actions/workflows/test-schedule.yml/badge.svg)
+<a href="https://github.com/bunniesnu/go-gmailnator/tags"><img src="https://img.shields.io/github/tag/bunniesnu/go-gmailnator.svg" alt="Latest Tag"></a>
+<a href="https://github.com/bunniesnu/go-gmailnator/actions"><img src="https://github.com/bunniesnu/go-gmailnator/actions/workflows/test-schedule.yml/badge.svg" alt="Test Status"></a>
 
 A [Go](https://go.dev) package for generating random gmail address and receiving emails.
 
