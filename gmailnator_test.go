@@ -40,4 +40,13 @@ func TestNewGmailnator(t *testing.T) {
 	if gmailnator.RapidAPI == "" {
 		t.Error("Expected RapidAPI to be set, got empty string")
 	}
+
+	// Test GetMails
+	email, err := gmailnator.GetMails()
+	if err != nil {
+		t.Errorf("Failed to get mails: %v", err)
+	}
+	if email == nil {
+		t.Error("Expected email to be returned, got nil")
+	}
 }

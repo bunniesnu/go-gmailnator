@@ -13,14 +13,23 @@ import (
 
 type Gmailnator struct {
 	XSRFToken string
-	Client *http.Client
-	Email *Email
-	RapidAPI string
+	Client    *http.Client
+	Email     *Email
+	RapidAPI  string
 }
 
 type Email struct {
     Email     string `json:"email"`
-    Timestamp int64 `json:"timestamp"`
+    Timestamp int64  `json:"timestamp"`
+}
+
+type ReceivedEmail struct {
+	Mid         string  `json:"mid"`
+	TextFrom    string  `json:"textFrom"`
+	TextDate    string  `json:"textDate"`
+	TextSubject string  `json:"textSubject"`
+	TextTo      string  `json:"textTo"`
+	TextSnippet *string `json:"textSnippet"`
 }
 
 func NewGmailnator() (*Gmailnator, error) {
@@ -91,4 +100,45 @@ func (g *Gmailnator) GenerateEmail() error {
     }
     g.Email = &emailResp.Items
     return nil
+}
+func (g *Gmailnator) GetMails() ([]ReceivedEmail, error) {
+	recaptcha, err := gocaptcha.NewRecaptchaV3(RecaptchaAnchorURL, nil, 0)
+	if err != nil {
+		return nil, errors.New("failed to create recaptcha instance: " + err.Error())
+	}
+	captchaToken, err := recaptcha.Solve()
+	if err != nil {
+		return nil, errors.New("failed to solve recaptcha: " + err.Error())
+	}
+	key, err := g.GetKey(fmt.Sprintf(`{"email": "%s", "timestamp": %d}`, g.Email.Email, g.Email.Timestamp), captchaToken)
+	if err != nil {
+		return nil, errors.New("failed to get key for new email: " + err.Error())
+	}
+	endpoint := fmt.Sprintf("https://public-sonjj.p.rapidapi.com/email/gm/check?key=%s&rapidapi-key=%s&email=%s&timestamp=%d", key, g.RapidAPI, g.Email.Email, g.Email.Timestamp)
+    req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+    if err != nil {
+        return nil, errors.New("failed to create request for new email: " + err.Error())
+    }
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
+	req.Header.Set("x-xsrf-token", g.XSRFToken)
+	req.Header.Set("x-g-token", captchaToken)
+	resp, err := g.Client.Do(req)
+	if err != nil {
+		return nil, errors.New("failed to fetch new email: " + err.Error())
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.New("failed to read response body: " + err.Error())
+	}
+	fmt.Println("Response Body:", string(body))
+	resp.Body = io.NopCloser(strings.NewReader(string(body)))
+	defer resp.Body.Close()
+    var emailResp struct {
+        Items []ReceivedEmail `json:"items"`
+    }
+    if err := json.NewDecoder(resp.Body).Decode(&emailResp); err != nil {
+        return nil, errors.New("failed to decode response for new email: " + err.Error())
+    }
+	return emailResp.Items, nil
 }
