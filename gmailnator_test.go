@@ -37,7 +37,7 @@ func SendTestMail(subject, body, destination string) error {
 func TestNewGmailnator(t *testing.T) {
 	// Check if environment variables are set
 	if os.Getenv("SMTP_FROM") == "" || os.Getenv("SMTP_PASSWORD") == "" {
-		t.Skip("Skipping test because SMTP_FROM or SMTP_PASSWORD is not set in environment variables")
+		t.Fatal("Failed test because SMTP_FROM or SMTP_PASSWORD is not set in environment variables")
 	}
 
 	// Test NewGmailnator
