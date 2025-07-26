@@ -106,11 +106,11 @@ func (g *Gmailnator) GenerateEmail() error {
         defer resp.Body.Close()
         body, _ := io.ReadAll(resp.Body)
         js := string(body)
-        parts := strings.Split(js, `rapidapi_key:"`)
+        parts := strings.Split(js, `rapidapi_key: '`)
         if len(parts) < 2 {
             return errors.New("rapidapi key not found")
         }
-        g.RapidAPI = strings.Split(parts[1], `"`)[0]
+        g.RapidAPI = strings.Split(parts[1], `'`)[0]
 	}
 	key, err := g.GetKey(`{"domain":"gmail.com","username":"random","server":"server-1","type":"alias"}`, captchaToken)
 	if err != nil {
